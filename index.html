@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUREX — Bot de Trading Automatisé sur l'Or</title>
+<meta name="description" content="AUREX — Bot de scalping automatisé sur l'or (XAU/USD). 100% automatisé, 24h/24 du lundi au vendredi. Rejoins la liste d'attente.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+:root{--gold:#D4A843;--gold-light:#F7D96E;--gold-dark:#8B7D3C;--bg:#060606;--bg2:#0C0C0C;--bg3:#111;--text:#E5E5E5;--dim:#888;--green:#22C55E;--red:#EF4444}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;line-height:1.7;overflow-x:hidden}
+
+/* Utility */
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.gold{background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section{padding:100px 0}
+.section-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:6px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
+.section-title{font-size:clamp(28px,4vw,44px);font-weight:700;line-height:1.3;margin-bottom:20px}
+.section-sub{font-size:clamp(16px,2vw,20px);color:var(--dim);max-width:600px;line-height:1.6}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 0;background:rgba(6,6,6,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(212,168,67,0.06)}
+nav .inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+nav .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+nav .logo svg{height:32px;width:auto}
+nav .logo span{font-size:18px;font-weight:800;letter-spacing:8px;background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .nav-right{display:flex;align-items:center;gap:14px}
+nav .nav-socials{display:flex;gap:8px}
+nav .nav-social{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.3s;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);overflow:hidden}
+nav .nav-social:hover{border-color:rgba(212,168,67,0.3);transform:translateY(-2px);background:rgba(255,255,255,0.06)}
+nav .nav-social img{border-radius:4px}
+@media(max-width:600px){nav .nav-socials{display:none}}
+nav .cta-nav{padding:10px 28px;border:1px solid rgba(212,168,67,0.3);border-radius:50px;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:2px;text-decoration:none;transition:all 0.3s}
+nav .cta-nav:hover{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.6)}
+
+/* Hero */
+.hero{padding:180px 0 120px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:10%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(212,168,67,0.06)0%,transparent 70%);border-radius:50%;pointer-events:none}
+.hero-badge{display:inline-block;padding:8px 24px;border:1px solid rgba(34,197,94,0.3);border-radius:50px;font-size:13px;font-weight:600;color:var(--green);letter-spacing:2px;margin-bottom:30px}
+.hero h1{font-size:clamp(36px,6vw,72px);font-weight:800;line-height:1.15;margin-bottom:24px}
+.hero h1 .line2{display:block;color:#fff}
+.hero-sub{font-size:clamp(16px,2vw,22px);color:var(--dim);max-width:550px;margin:0 auto 40px;line-height:1.6}
+.hero-cta{display:inline-block;padding:18px 50px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:50px;font-size:18px;font-weight:700;color:#000;letter-spacing:2px;text-decoration:none;transition:all 0.3s;box-shadow:0 0 40px rgba(212,168,67,0.15)}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(212,168,67,0.25)}
+.hero-free{font-size:14px;color:var(--gold-dark);margin-top:16px;letter-spacing:2px}
+
+/* Proof bar */
+.proof-bar{background:var(--bg2);border-top:1px solid rgba(212,168,67,0.06);border-bottom:1px solid rgba(212,168,67,0.06);padding:35px 0}
+.proof-inner{display:flex;justify-content:center;gap:clamp(30px,6vw,80px);flex-wrap:wrap}
+.proof-item{text-align:center}
+.proof-val{font-size:clamp(28px,4vw,42px);font-weight:800;color:var(--green)}
+.proof-val.gold-v{background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.proof-lbl{font-size:12px;letter-spacing:3px;color:var(--dim);margin-top:4px;font-family:'Space Mono',monospace}
+
+/* Results */
+.results{background:var(--bg2)}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:50px}
+@media(max-width:768px){.results-grid{grid-template-columns:1fr}}
+.results-chart{background:var(--bg);border:1px solid rgba(212,168,67,0.08);border-radius:16px;padding:30px;position:relative}
+.results-chart canvas{width:100%;height:250px}
+.results-info{display:flex;flex-direction:column;gap:20px}
+.result-card{background:var(--bg);border:1px solid rgba(212,168,67,0.08);border-radius:12px;padding:24px;transition:border-color 0.3s}
+.result-card:hover{border-color:rgba(212,168,67,0.25)}
+.result-card .rc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.result-card .rc-label{font-size:13px;color:var(--dim);letter-spacing:2px;font-family:'Space Mono',monospace}
+.result-card .rc-val{font-size:28px;font-weight:700;color:var(--green)}
+.result-card .rc-val.gold-rc{background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.result-card .rc-bar{height:4px;border-radius:2px;background:rgba(255,255,255,0.05);margin-top:10px;overflow:hidden}
+.result-card .rc-fill{height:100%;border-radius:2px;background:var(--green)}
+.transp-note{margin-top:20px;font-size:14px;color:var(--gold-dark);padding:16px;border:1px solid rgba(212,168,67,0.1);border-radius:10px;background:rgba(212,168,67,0.02);text-align:center}
+
+/* Features */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px}
+@media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+.feat-card{background:var(--bg2);border:1px solid rgba(212,168,67,0.06);border-radius:14px;padding:32px 28px;transition:all 0.3s}
+.feat-card:hover{border-color:rgba(212,168,67,0.2);transform:translateY(-4px)}
+.feat-icon{width:48px;height:48px;border-radius:12px;background:rgba(212,168,67,0.08);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
+.feat-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:14px;color:var(--dim);line-height:1.6}
+
+/* How it works */
+.how{background:var(--bg2)}
+.steps{display:flex;gap:24px;margin-top:50px;flex-wrap:wrap;justify-content:center}
+.step{flex:1;min-width:220px;max-width:280px;text-align:center;position:relative}
+.step-num{width:56px;height:56px;border-radius:50%;border:2px solid rgba(212,168,67,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;margin:0 auto 18px}
+.step-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.step-desc{font-size:14px;color:var(--dim);line-height:1.6}
+.step-arrow{position:absolute;top:28px;right:-18px;font-size:20px;color:rgba(212,168,67,0.3)}
+@media(max-width:768px){.step-arrow{display:none}}
+
+/* Waitlist */
+.waitlist{text-align:center;position:relative}
+.waitlist::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(212,168,67,0.04)0%,transparent 70%);border-radius:50%;pointer-events:none}
+.waitlist-box{max-width:500px;margin:40px auto 0;background:var(--bg2);border:1px solid rgba(212,168,67,0.1);border-radius:16px;padding:40px 32px;position:relative;z-index:1}
+.waitlist-box h3{font-size:24px;font-weight:700;margin-bottom:8px}
+.waitlist-box p{font-size:14px;color:var(--dim);margin-bottom:24px}
+.wl-form{display:flex;gap:10px}
+.wl-input{flex:1;padding:16px 20px;background:var(--bg);border:1px solid rgba(255,255,255,0.08);border-radius:12px;font-size:15px;color:#fff;font-family:'Outfit',sans-serif;outline:none;transition:border-color 0.3s}
+.wl-input:focus{border-color:rgba(212,168,67,0.4)}
+.wl-input::placeholder{color:#555}
+.wl-btn{padding:16px 32px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:12px;font-size:15px;font-weight:700;color:#000;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:1px;transition:all 0.3s;white-space:nowrap}
+.wl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,168,67,0.2)}
+.wl-count{margin-top:20px;font-size:13px;color:var(--gold-dark)}
+.wl-success{display:none;padding:30px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:16px;text-align:center;max-width:500px;margin:40px auto 0;animation:fadeIn 0.6s ease}
+.wl-success .check{font-size:50px;margin-bottom:12px}
+.wl-success h4{font-size:22px;color:var(--green);margin-bottom:8px}
+.wl-success p{font-size:14px;color:var(--dim)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:500px){.wl-form{flex-direction:column}}
+
+/* FAQ */
+.faq{background:var(--bg2)}
+.faq-list{max-width:700px;margin:40px auto 0}
+.faq-item{border-bottom:1px solid rgba(255,255,255,0.04);overflow:hidden}
+.faq-q{padding:20px 0;font-size:16px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:color 0.3s}
+.faq-q:hover{color:var(--gold)}
+.faq-q .arrow{font-size:20px;color:var(--gold-dark);transition:transform 0.3s}
+.faq-item.open .arrow{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.4s ease;font-size:14px;color:var(--dim);line-height:1.7}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:20px}
+
+/* Social */
+.socials{display:flex;justify-content:center;gap:16px;margin-top:40px}
+.social-btn{display:flex;align-items:center;gap:10px;padding:14px 28px;background:var(--bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-decoration:none;color:var(--text);font-size:14px;font-weight:600;transition:all 0.3s}
+.social-btn:hover{border-color:rgba(212,168,67,0.3);transform:translateY(-2px)}
+.social-btn .si{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.social-btn .si img{border-radius:4px}
+.si.tg{background:transparent}.si.dc{background:transparent}.si.ig{background:transparent}.si.tk{background:transparent}
+@media(max-width:600px){.socials{flex-direction:column;align-items:center}}
+
+/* Footer */
+footer{padding:60px 0 40px;border-top:1px solid rgba(212,168,67,0.06);text-align:center}
+footer .f-logo{font-size:20px;font-weight:800;letter-spacing:8px;background:linear-gradient(135deg,var(--gold-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+footer .f-tag{font-size:12px;color:var(--gold-dark);letter-spacing:4px;margin-bottom:20px}
+footer .f-disclaimer{font-size:11px;color:#444;line-height:1.8;max-width:600px;margin:0 auto}
+footer .f-copy{font-size:11px;color:#333;margin-top:20px;letter-spacing:2px}
+footer .f-warn{display:inline-block;margin-top:16px;padding:12px 24px;border:1px solid rgba(212,168,67,0.08);border-radius:8px;font-size:11px;color:var(--gold-dark);background:rgba(212,168,67,0.02)}
+
+/* Animations */
+.fade-up{opacity:0;transform:translateY(30px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a href="#" class="logo">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="navGold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#F7D96E"/><stop offset="50%" style="stop-color:#D4A843"/><stop offset="100%" style="stop-color:#C49B38"/></linearGradient></defs>
+        <path d="M50,8 L20,80 L31,80 L38,62 L62,62 L69,80 L80,80 Z M50,30 L42,55 L58,55 Z" fill="url(#navGold)"/>
+        <line x1="12" y1="48" x2="34" y2="48" stroke="url(#navGold)" stroke-width="2.5" opacity="0.6"/>
+        <line x1="66" y1="48" x2="88" y2="48" stroke="url(#navGold)" stroke-width="2.5" opacity="0.6"/>
+      </svg>
+      <span>UREX</span>
+    </a>
+    <div class="nav-right">
+      <div class="nav-socials">
+        <a href="https://t.me/+ZZCw7d7h9TM3ZWM0" target="_blank" class="nav-social tg" title="Telegram"><img src="data:image/png;base64,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" width="20" height="20" style="border-radius:4px"></a>
+        <a href="https://discord.gg/eHk8rFjMgc" target="_blank" class="nav-social dc" title="Discord"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABvFBMVEUAAAAAAQIMDxsoMVc9S4VIWZ5NX6goMVgBAQIKDBYyPm5MXqdSZbNQY7BOYaxOYKocIj1TZ7ZNX6lNXqccIz4kLE5TZrVOYatMXqZNX6pTZrYkLE8dIz9PYapRYqtKXahQYqsdJEALDRhNXqhJW6dAU6Naa69DVqVCVaRDVqRIW6cLDhgzP29jc7OstNbi5fDt7vaKlsaOmciOmsiKlcbs7vXi5fGstddkc7QzP3ANER5LXahXaK7q7PX////9/v5Zaq8OER8oMlhBVaSrs9b5+vz9/f78/f38/P2uttcpMllOYKlKXKhba7Dw8vf+/v7y8/hdbbFQY689TIZQYqqRnMr29/qUn8tJWZ9QYatEV6XDyeLCyOHEyuJRY6uPmsjFy+NQYapPYKrj5vHm6PJIWqc+UqJwfrpzgbtGWabk5/JPYazy9Pn+/v93hb09UaGrtNY9UaJ0grz7+/3z9PlbbLBKXKdRZLBIW6ZgcLL09fna3u38/f5hcLJTZbNJW6b19vrv8ffm6fPn6fP29vpPYauTnsqHlMWzu9q0u9qIlMWvt9emr9Otttc4TJ9QYalAVKNSZKxOYKtMXqlGs9iHAAAAAWJLR0Q+SWQA4wAAAAd0SU1FB+oDGRI0Hzg6eZ0AAAHGSURBVCjPdVL5WxJRFH0qvNQHvHwoEDXD5AKDa1a2exHLYZCpEZdxV6K0xXYhLVMzc9/1H/YO2G95fjjfXb537/fOuYQgSggpLXM4KXU6rpQW0iLKSUUlc7k9nHvcLlZZgYWL+lVWxRkVCMp4lbe62CkhNT5/QHDOxTWbAv7gdXtaObnho1SSRUhBhIQsUeq7ab+pZf46qb5BhCOqGg2Lhkapzs+acFRzMCDVt7S23Wq/fedux737DxqlQPAhIY8Y54+fdEIMCohBR1eIcxYn3S6mPH0GPZqW0PWEpvVAUlWYq5c43Cnj+QuIaaYGgBSDvrSR6h8gTs+gOgQ66BaYJlgYwLA66BkhlI+OjWM2pEwATE5NY5gZe8kpNkT2FcDrmdk3AG9n32H8XhLYcM4Z4Q/wUf/0+QtA8uu3eYBc/vvcCHEsLP7A8fBzaf5XQl/KYWgtLy4MkO6V1fRvMNf+4G7cvr5mwt/06kovfnDD2MyBldzazmR2dvcsyG0aG964LQlT8/vWwWE0EokeHlj7edVrS2KLeGQcn4isrIzKWXFybByd2iIWZE/JZ4KjJUhncupC9qJRdpEX6J9Rl1t7+TH8/3zOAdYSZKgoL4wDAAAAHnRFWHRpY2M6Y29weXJpZ2h0AEdvb2dsZSBJbmMuIDIwMTasCzM4AAAAFHRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQrqQcwcAAAAASUVORK5CYII=" width="20" height="20" style="border-radius:4px"></a>
+        <a href="https://www.instagram.com/aurex_bot/" target="_blank" class="nav-social ig" title="Instagram"><img src="data:image/png;base64,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" width="20" height="20" style="border-radius:4px"></a>
+        <a href="https://www.tiktok.com/@aurex_bot" target="_blank" class="nav-social tk" title="TikTok"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABsFBMVEUAAAAAAgIBBAMBAgIVdG8inpccYF0FAAAAAQEBAAA6z8rl///52eFoECAEAwM6w734//////+3coACAgIDAAAAAwIBAQE6x8D5///+/Pz/+vxxenoAIB4BBgUEAAA6xsD6/////Pz+/v79//+++PVmOkUCAAAADQwANzUBIyI6xr/7///8y9Tyv8raUG0DAQIIcm0w2tJ///6nsLcwAAUxxb3/ssJ6Bhx1R0/jeY7HM1AMjYZh///u+vv/vc9fBRkpw7n/uclsCBsLAAETAwUDOzhG/fTz//3/2eH3epXuVXNRCxkswrn/uMhtBxsAAgAAAwMIhn+p////9Pb2SGxkABIGAQAAAAH3//9sBxsEAAEXmZPV////3OWvGjcABAADBQQ6x8H1////tscDAAEUfHfX/////f+mU2QANzRE7eT8////nLJjBBcAAgEAKCat9PDz7O5Zg4EOe3Up3tW4/fr/+vv6U3YzAgs7aWb//v76/v7W/v7l/f7/jKeqEzEAAQBVSk3xyNH/7vT97vT9z9z/bo24FjYQBAceAwh3IjOfK0KVFC1PBBIDAgIDAQGuoXxTAAAAAWJLR0QR4rU9ugAAAAd0SU1FB+oDGRI0II5cVKAAAAD6SURBVCjPY2CgCDAyMZOog4WVjZ0DU5iTgYubh5eBD4sEv4CgEIOwCJq4qBiDuISklLSMLKqDGDjlGOQVFJWUVVTVOJDF1TU0GbS0dXSVBfXkkCT0DQyNjE1MJczMLSytEJZwqFnb2Crb2TsoODoxOLsgmePq5u7h6eXto+Dr54/k3ADOwKDgkNCwcP4I30iGKE6EBEN0TGxcfAJDYlJyJEMKkg6G1LT0DAa5zKzsnFxkiTzO/ALBwqLiktKy8goGNSTfCTNUaldV19Rm19U3cKL4W5ihsam5pbWtvQM9AIUZOru6e3r7MMNcuAEcwJxYYkO/PyWFooQBADyjLiHCxHM6AAAAHnRFWHRpY2M6Y29weXJpZ2h0AEdvb2dsZSBJbmMuIDIwMTasCzM4AAAAFHRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQrqQcwcAAAAASUVORK5CYII=" width="20" height="20" style="border-radius:4px"></a>
+      </div>
+      <a href="#waitlist" class="cta-nav">LISTE D'ATTENTE</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">🚀 LANCEMENT LE 1er JUIN 2026</div>
+    <h1>
+      <span class="gold">L'or ne dort jamais.</span>
+      <span class="line2">Nous non plus.</span>
+    </h1>
+    <p class="hero-sub">Un bot de trading automatisé qui scalpe l'or pour toi. 24h/24, du lundi au vendredi. Sans que tu touches à quoi que ce soit.</p>
+    <a href="#waitlist" class="hero-cta">REJOINDRE LA LISTE D'ATTENTE</a>
+    <div class="hero-free">ACCÈS GRATUIT · COMMISSION UNIQUEMENT SUR LES GAINS</div>
+  </div>
+</section>
+
+<!-- PROOF BAR -->
+<!-- LAUNCH COUNTDOWN -->
+<section class="section" style="padding:60px 0;text-align:center">
+  <div class="container">
+    <div class="section-label fade-up">LANCEMENT</div>
+    <div class="section-title fade-up">1er Juin 2026</div>
+    <div class="section-sub fade-up" style="margin:0 auto 30px auto;text-align:center">Le bot tourne depuis le 12 février. Le service de copy trading ouvrira ses portes le 1er juin. Places limitées.</div>
+    <div style="display:inline-block;padding:20px 50px;border:2px solid rgba(212,168,67,0.2);border-radius:16px;background:rgba(212,168,67,0.03)" class="fade-up">
+      <div style="font-family:'Space Mono',monospace;font-size:14px;letter-spacing:4px;color:var(--gold-dark);margin-bottom:8px">COMPTE À REBOURS</div>
+      <div id="launchCountdown" style="font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:4px"><span class="gold" id="cd-days">69</span> <span style="color:var(--dim);font-size:clamp(14px,2vw,18px)">jours</span> <span class="gold" id="cd-hours">00</span> <span style="color:var(--dim);font-size:clamp(14px,2vw,18px)">h</span> <span class="gold" id="cd-mins">00</span> <span style="color:var(--dim);font-size:clamp(14px,2vw,18px)">min</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div style="text-align:center">
+      <div class="section-label fade-up">POURQUOI AUREX</div>
+      <div class="section-title fade-up">Un bot. <span class="gold">Pas de promesses.</span> Des résultats.</div>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">100% Automatisé</div>
+        <div class="feat-desc">Le bot analyse, entre et sort des positions tout seul. Tu n'as rien à faire. Zéro compétence requise.</div>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">⏰</div>
+        <div class="feat-title">24h/24 · Lun-Ven</div>
+        <div class="feat-desc">Le marché de l'or est ouvert du lundi au vendredi, non-stop. Le bot trade à chaque instant, jour et nuit, pendant que tu dors, que tu travailles, que tu vis. Le week-end, le marché est fermé — le bot se repose aussi.</div>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🎯</div>
+        <div class="feat-title">Spécialisé XAU/USD</div>
+        <div class="feat-desc">Un seul actif. Une seule stratégie. Le scalping sur l'or. La spécialisation, c'est ce qui fait la différence.</div>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Transparence totale</div>
+        <div class="feat-desc">Résultats publics. Pertes incluses. Pas de screenshots retouchés. Pas de fausses promesses. La vérité, c'est tout.</div>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">💰</div>
+        <div class="feat-title">0€ d'abonnement</div>
+        <div class="feat-desc">Aucun frais d'entrée, aucun abonnement. On prend juste une commission de 20% sur tes gains. Si tu ne gagnes pas, tu ne paies rien. On gagne ensemble, ou pas du tout.</div>
+      </div>
+      <div class="feat-card fade-up">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-title">Copy Trading sécurisé</div>
+        <div class="feat-desc">Ton argent reste sur TON compte. On n'y a jamais accès. Le copy trading copie uniquement les trades — tu gardes le contrôle total de tes fonds à tout moment.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING MODEL -->
+<section class="section" id="prix" style="background:var(--bg2)">
+  <div class="container" style="text-align:center">
+    <div class="section-label fade-up">NOTRE MODÈLE</div>
+    <div class="section-title fade-up">On gagne <span class="gold">ensemble</span>, ou pas du tout.</div>
+    <div class="section-sub fade-up" style="margin:0 auto 50px auto;text-align:center">Pas d'abonnement. Pas de frais cachés. On prend une commission uniquement quand tu gagnes.</div>
+    
+    <div style="max-width:500px;margin:0 auto" class="fade-up">
+      <div style="background:var(--bg);border:2px solid rgba(212,168,67,0.2);border-radius:20px;padding:50px 40px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold-light),var(--gold))"></div>
+        <div style="font-size:14px;letter-spacing:4px;color:var(--gold-dark);margin-bottom:20px;font-family:'Space Mono',monospace">ACCÈS AU BOT</div>
+        <div style="font-size:64px;font-weight:800;margin-bottom:5px"><span class="gold">0€</span></div>
+        <div style="font-size:18px;color:var(--dim);margin-bottom:35px">Aucun frais d'entrée</div>
+        
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin:0 -40px 30px -40px"></div>
+        
+        <div style="font-size:14px;letter-spacing:3px;color:var(--gold-dark);margin-bottom:15px;font-family:'Space Mono',monospace">COMMISSION</div>
+        <div style="font-size:48px;font-weight:800;color:#22C55E;margin-bottom:5px">20%</div>
+        <div style="font-size:16px;color:var(--dim);margin-bottom:30px">uniquement sur tes gains</div>
+        
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin:0 -40px 30px -40px"></div>
+        
+        <div style="display:flex;flex-direction:column;gap:14px;text-align:left;margin-bottom:30px">
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="color:#22C55E;font-size:18px">✓</span> Tu gagnes → on prend 20%</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="color:#22C55E;font-size:18px">✓</span> Tu ne gagnes pas → tu ne paies rien</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="color:#22C55E;font-size:18px">✓</span> Pas d'abonnement mensuel</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="color:#22C55E;font-size:18px">✓</span> Pas de frais cachés</div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="color:#22C55E;font-size:18px">✓</span> On a intérêt à ce que tu gagnes</div>
+        </div>
+        
+        <a href="#waitlist" style="display:block;padding:18px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:14px;font-size:16px;font-weight:700;color:#000;text-decoration:none;letter-spacing:2px;text-align:center;transition:all 0.3s">REJOINDRE LA LISTE D'ATTENTE</a>
+      </div>
+      
+      <div style="margin-top:24px;padding:18px 24px;border:1px solid rgba(34,197,94,0.15);border-radius:12px;background:rgba(34,197,94,0.03);font-size:14px;color:var(--dim)" class="fade-up">
+        <span style="color:#22C55E;font-weight:600">💡 Pourquoi ce modèle ?</span><br>
+        C'est la preuve qu'on croit en notre bot. Si on te faisait payer un abonnement, on gagnerait même quand tu perds. Avec la commission sur les gains, on ne gagne que si tu gagnes. Nos intérêts sont alignés.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how section" id="comment">
+  <div class="container" style="text-align:center">
+    <div class="section-label fade-up">COMMENT ÇA MARCHE</div>
+    <div class="section-title fade-up">Trois étapes. <span class="gold">C'est tout.</span></div>
+    <div class="steps">
+      <div class="step fade-up">
+        <div class="step-num gold">1</div>
+        <div class="step-title">Inscris-toi</div>
+        <div class="step-desc">Rejoins la liste d'attente. Quand ta place est prête, on t'envoie l'accès.</div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num gold">2</div>
+        <div class="step-title">Connecte-toi en Copy Trading</div>
+        <div class="step-desc">Lie ton compte broker au nôtre en quelques clics. Tu copies automatiquement chaque trade du bot sur ton compte. On t'accompagne étape par étape.</div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num gold">3</div>
+        <div class="step-title">Laisse-le faire</div>
+        <div class="step-desc">Le bot trade l'or, et chaque position est copiée sur ton compte en temps réel. 24h/24, du lundi au vendredi. Tu suis tes résultats sans rien toucher.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section class="waitlist section" id="waitlist">
+  <div class="container">
+    <div class="section-label fade-up">ACCÈS ANTICIPÉ</div>
+    <div class="section-title fade-up" style="text-align:center">Rejoins la <span class="gold">liste d'attente</span></div>
+    <div class="section-sub fade-up" style="text-align:center;margin:0 auto">Sois parmi les premiers à accéder au bot. Places limitées. Accès gratuit.</div>
+    
+    <div class="waitlist-box fade-up" id="wl-box">
+      <h3>🔓 Réserve ta place</h3>
+      <p>Laisse ton email et on te prévient dès que c'est prêt.</p>
+      <div class="wl-form" id="wl-form">
+        <input type="email" class="wl-input" id="wl-email" placeholder="ton@email.com" required>
+        <button class="wl-btn" id="wl-btn" onclick="joinWaitlist()">REJOINDRE</button>
+      </div>
+      <div class="wl-error" id="wl-error" style="display:none;color:#EF4444;font-size:13px;margin-top:10px">Entre une adresse email valide.</div>
+      <div class="wl-count">🔥 <span id="count">247</span> personnes déjà inscrites</div>
+    </div>
+    <div class="wl-success" id="wl-success">
+      <div class="check">✅</div>
+      <h4>Tu es sur la liste !</h4>
+      <p>On te prévient dès que c'est prêt.</p>
+      <p style="margin-top:12px;font-size:15px;color:#D4A843;font-weight:600">Redirection vers le Telegram dans <span id="countdown">5</span>s...</p>
+      <a href="https://t.me/+ZZCw7d7h9TM3ZWM0" id="tg-link" style="display:inline-block;margin-top:16px;padding:14px 36px;background:linear-gradient(135deg,#229ED9,#1A8AC9);border-radius:12px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:1px">📲 REJOINDRE LE TELEGRAM</a>
+    </div>
+
+    <!-- IFRAME caché pour Google Forms (pas de redirection de page) -->
+    <iframe name="gform-frame" id="gform-frame" style="display:none"></iframe>
+    
+    <div class="socials fade-up">
+      <a href="https://t.me/+ZZCw7d7h9TM3ZWM0" target="_blank" class="social-btn"><div class="si tg"><img src="data:image/png;base64,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" width="18" height="18" style="border-radius:4px"></div>Telegram</a>
+      <a href="https://discord.gg/eHk8rFjMgc" target="_blank" class="social-btn"><div class="si dc"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABvFBMVEUAAAAAAQIMDxsoMVc9S4VIWZ5NX6goMVgBAQIKDBYyPm5MXqdSZbNQY7BOYaxOYKocIj1TZ7ZNX6lNXqccIz4kLE5TZrVOYatMXqZNX6pTZrYkLE8dIz9PYapRYqtKXahQYqsdJEALDRhNXqhJW6dAU6Naa69DVqVCVaRDVqRIW6cLDhgzP29jc7OstNbi5fDt7vaKlsaOmciOmsiKlcbs7vXi5fGstddkc7QzP3ANER5LXahXaK7q7PX////9/v5Zaq8OER8oMlhBVaSrs9b5+vz9/f78/f38/P2uttcpMllOYKlKXKhba7Dw8vf+/v7y8/hdbbFQY689TIZQYqqRnMr29/qUn8tJWZ9QYatEV6XDyeLCyOHEyuJRY6uPmsjFy+NQYapPYKrj5vHm6PJIWqc+UqJwfrpzgbtGWabk5/JPYazy9Pn+/v93hb09UaGrtNY9UaJ0grz7+/3z9PlbbLBKXKdRZLBIW6ZgcLL09fna3u38/f5hcLJTZbNJW6b19vrv8ffm6fPn6fP29vpPYauTnsqHlMWzu9q0u9qIlMWvt9emr9Otttc4TJ9QYalAVKNSZKxOYKtMXqlGs9iHAAAAAWJLR0Q+SWQA4wAAAAd0SU1FB+oDGRI0Hzg6eZ0AAAHGSURBVCjPdVL5WxJRFH0qvNQHvHwoEDXD5AKDa1a2exHLYZCpEZdxV6K0xXYhLVMzc9/1H/YO2G95fjjfXb537/fOuYQgSggpLXM4KXU6rpQW0iLKSUUlc7k9nHvcLlZZgYWL+lVWxRkVCMp4lbe62CkhNT5/QHDOxTWbAv7gdXtaObnho1SSRUhBhIQsUeq7ab+pZf46qb5BhCOqGg2Lhkapzs+acFRzMCDVt7S23Wq/fedux737DxqlQPAhIY8Y54+fdEIMCohBR1eIcxYn3S6mPH0GPZqW0PWEpvVAUlWYq5c43Cnj+QuIaaYGgBSDvrSR6h8gTs+gOgQ66BaYJlgYwLA66BkhlI+OjWM2pEwATE5NY5gZe8kpNkT2FcDrmdk3AG9n32H8XhLYcM4Z4Q/wUf/0+QtA8uu3eYBc/vvcCHEsLP7A8fBzaf5XQl/KYWgtLy4MkO6V1fRvMNf+4G7cvr5mwt/06kovfnDD2MyBldzazmR2dvcsyG0aG964LQlT8/vWwWE0EokeHlj7edVrS2KLeGQcn4isrIzKWXFybByd2iIWZE/JZ4KjJUhncupC9qJRdpEX6J9Rl1t7+TH8/3zOAdYSZKgoL4wDAAAAHnRFWHRpY2M6Y29weXJpZ2h0AEdvb2dsZSBJbmMuIDIwMTasCzM4AAAAFHRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQrqQcwcAAAAASUVORK5CYII=" width="18" height="18" style="border-radius:4px"></div>Discord</a>
+      <a href="https://www.instagram.com/aurex_bot/" target="_blank" class="social-btn"><div class="si ig"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAIAAABvFaqvAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH6gMZEjQgjlxUoAAABYdJREFUOMslzP2rnnUZAPDrur4v99tzn+ftuJnT5bTmhF5cenCjLSmlXEZNmawiJRCZRVIRJBII/tAP4UwIjSCSsB+CpCbmio2aLdlOK2vLZZi5c+Y6a54z95zzPHvu57nv78t19UOfP+CDAATAM/0br9+6r3vlR5JkhpCIgYQNcxLZMtsoJooJrCPoIDoI+eimo6XVvx9Zeu785E0EQgDYsPHOuZ3fszoTPyUJCkUx2xiTGJMoltlENlFMEBNFM+gIFIBYGcoabp498/hfB0ewN7Nl18d+ZpDEV0aTuCCjJhfOkVMRy2yZTRTDoqKoKBAEBU3LotExslW5B3n8n1/Rt2y4r38Zgr9klYrjptdVc3uuet/cbKuXmEQpAgQAEBQQFm64vlSvnFg59+LbzaBSReLDqKvb97zn8/jgzc93TFeh46q5/kPtL35/W+uKLExcM6ijixIF5P8XkEKVatvPVKrri9M/P/zK6skBtRIU/W4Y4iPbXkgIybt2iQ/8fFdS6Fe+c3RlfolqryNrFAVIDBgBhSAICszetvHDT98exuH47oN+FNCaRoRyCBk6O7689ZMbynX5sUePnP/V6TxMZ0wo05i7SVoNs+mwkKpl6v512dxzuzTw6189lK7Pr/n0NWo8MRAyYW3FZcxamvfOrQ8TN5pfmJ3VFj3VXoXQ23Ft+5aNKFCdXBr89o2Zj17V27ERJu5fD/0m1qG3bf2FH59S4iOTzsS1OGp0rdnMDSbJtEoMqqlLSnvDU3s72zcJCwAg4Wh+8ew3D5zZ94t6cdVgHS5WybrcUsDoCUgX4nIOWpxJlTQh8XWqiEJzwxP3drZveueZI2sHTiJAd/fWdV/7xKYnPruw91nVLqwGcZ4SZTCIeBSl8+hSCBYaIkAOua507Ts7Nnd2vn/l6cMrjx0w/RIALz72SxKeffiO3p2bx0ffQmUgRtJKYxCJEYQKmpRmNJOvKopEsdUeFPlKZ/uVAFAffrm8OqalS7KQ9mx14C8AkG+9mppaSwABAFHUKPBKom4Xg9zUSRiSiigxn1lTdmKSKQAk5Si214C8OB09KqwBgCQq8QAGQQCAIAB5iECt1lqrtZa31hCZiNPWMO1WvPA3AGh9Zpvmt629aOxFHc6Ve24CAPfqv7VmEg8AAEIQCQJh0EUxTK3TYUTgUZMtRiqxsHDUn54vvnAf6eh+f0i8KR7YW9x/d338NX/ipCpmoPaoQCITB4GIiDotxqlxyo8gTijvmHJKJqB17qffxgf3Z/d+Od1zPwggkT91svrufltycFZQo9W8OsUYEFiAdZJVJgmquQzjZdxwne4wcoW5gmY5/PBLcfNO2jQnTOEfp/2fTlHModOW0USkVP2We+MdiAGRQVibbKqTqNSUzx3DD95uPnCrvPY85OswIwkIi7+Lrx+SWkPMVbeHkwhVheNBdsddVKT1/JsoDCAIrCVxOmcqC1g8KON9+u6nYmnh/AnxDn2AoqRaZMIyFqiGoj3lKr3nttajD4XltclLr1JhJXIA0ZcpdkvFNieaxD8+oj7+pL7rGXEV1KsQGmEGEWAAFmAFOoWZPmVZvDRY/dYP+N1VzDsIMIwTdeuW9k03dkJidLePfEkuHAE/RKVAGdAWtUGtUSvUCknATfg/Z+qDL473/yicWQHbdh5znb88fgtvvrb8w5M7W2XiGFWeIQnEGpBACBjAB2mCTJ2MnQwdX3Jxxftlin5dqLuTQWFcvwa9e+En6sKaW1xuPvepLXZ9H22GaYlFH7IOpiUmBdoCbI4mRZ2iTkCnYHLQuTQKncmkVTX660u/PlYtKCI4fXb40vH/znbL3hX9pCjJZmgS0QkoC8oAKUEFSCAIDBKQHTYTWB6GQyvL3zh7+Fh1lgD/B7GM/LJfNE36AAAAHnRFWHRpY2M6Y29weXJpZ2h0AEdvb2dsZSBJbmMuIDIwMTasCzM4AAAAFHRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQrqQcwcAAAAASUVORK5CYII=" width="18" height="18" style="border-radius:4px"></div>Instagram</a>
+      <a href="https://www.tiktok.com/@aurex_bot" target="_blank" class="social-btn"><div class="si tk"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABsFBMVEUAAAAAAgIBBAMBAgIVdG8inpccYF0FAAAAAQEBAAA6z8rl///52eFoECAEAwM6w734//////+3coACAgIDAAAAAwIBAQE6x8D5///+/Pz/+vxxenoAIB4BBgUEAAA6xsD6/////Pz+/v79//+++PVmOkUCAAAADQwANzUBIyI6xr/7///8y9Tyv8raUG0DAQIIcm0w2tJ///6nsLcwAAUxxb3/ssJ6Bhx1R0/jeY7HM1AMjYZh///u+vv/vc9fBRkpw7n/uclsCBsLAAETAwUDOzhG/fTz//3/2eH3epXuVXNRCxkswrn/uMhtBxsAAgAAAwMIhn+p////9Pb2SGxkABIGAQAAAAH3//9sBxsEAAEXmZPV////3OWvGjcABAADBQQ6x8H1////tscDAAEUfHfX/////f+mU2QANzRE7eT8////nLJjBBcAAgEAKCat9PDz7O5Zg4EOe3Up3tW4/fr/+vv6U3YzAgs7aWb//v76/v7W/v7l/f7/jKeqEzEAAQBVSk3xyNH/7vT97vT9z9z/bo24FjYQBAceAwh3IjOfK0KVFC1PBBIDAgIDAQGuoXxTAAAAAWJLR0QR4rU9ugAAAAd0SU1FB+oDGRI0II5cVKAAAAD6SURBVCjPY2CgCDAyMZOog4WVjZ0DU5iTgYubh5eBD4sEv4CgEIOwCJq4qBiDuISklLSMLKqDGDjlGOQVFJWUVVTVOJDF1TU0GbS0dXSVBfXkkCT0DQyNjE1MJczMLSytEJZwqFnb2Crb2TsoODoxOLsgmePq5u7h6eXto+Dr54/k3ADOwKDgkNCwcP4I30iGKE6EBEN0TGxcfAJDYlJyJEMKkg6G1LT0DAa5zKzsnFxkiTzO/ALBwqLiktKy8goGNSTfCTNUaldV19Rm19U3cKL4W5ihsam5pbWtvQM9AIUZOru6e3r7MMNcuAEcwJxYYkO/PyWFooQBADyjLiHCxHM6AAAAHnRFWHRpY2M6Y29weXJpZ2h0AEdvb2dsZSBJbmMuIDIwMTasCzM4AAAAFHRFWHRpY2M6ZGVzY3JpcHRpb24Ac1JHQrqQcwcAAAAASUVORK5CYII=" width="18" height="18" style="border-radius:4px"></div>TikTok</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq section" id="faq">
+  <div class="container">
+    <div style="text-align:center">
+      <div class="section-label fade-up">FAQ</div>
+      <div class="section-title fade-up">Questions <span class="gold">fréquentes</span></div>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">C'est quoi AUREX exactement ?<span class="arrow">+</span></div>
+        <div class="faq-a">AUREX est un bot de trading automatisé spécialisé sur l'or (XAU/USD). Il analyse le marché et prend ses propres positions en scalping, 24h/24 du lundi au vendredi. Tu te connectes en copy trading : chaque trade du bot est automatiquement copié sur ton compte, sans aucune intervention de ta part.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">C'est vraiment gratuit ?<span class="arrow">+</span></div>
+        <div class="faq-a">Oui. L'accès au bot est 100% gratuit. Zéro abonnement, zéro frais d'entrée. On prend uniquement une commission de 20% sur tes gains. Si le bot ne te fait pas gagner d'argent, tu ne paies rien. C'est simple : on gagne ensemble, ou pas du tout.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Est-ce que je dois savoir trader ?<span class="arrow">+</span></div>
+        <div class="faq-a">Non. Tu te connectes en copy trading et le bot fait tout. Tu n'as besoin d'aucune compétence en trading. On te guide pour la connexion, et ensuite chaque trade est copié automatiquement sur ton compte.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Quel est le capital minimum ?<span class="arrow">+</span></div>
+        <div class="faq-a">Le capital minimum recommandé sera indiqué à l'inscription. N'investis jamais plus que ce que tu es prêt à perdre. Le trading comporte des risques réels.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Est-ce que je peux perdre de l'argent ?<span class="arrow">+</span></div>
+        <div class="faq-a">Oui. Le trading comporte des risques. Même avec un bot, des pertes sont possibles et normales. C'est pour ça qu'on montre aussi nos semaines en perte. La transparence est notre valeur numéro 1.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Comment je sais que c'est pas une arnaque ?<span class="arrow">+</span></div>
+        <div class="faq-a">On publie nos résultats chaque jour, pertes incluses. Tu peux suivre les trades en temps réel sur Discord. Aucun admin ne te contactera en DM pour te demander de l'argent. Et surtout : on ne te demande rien à l'avance. Notre seule rémunération, c'est 20% de tes gains. Si tu ne gagnes pas, on ne gagne pas non plus. On a tout intérêt à ce que le bot performe.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Le bot trade aussi le week-end ?<span class="arrow">+</span></div>
+        <div class="faq-a">Non. Le marché de l'or (XAU/USD) est fermé le samedi et le dimanche. Le bot trade du lundi au vendredi, 24h/24 non-stop. Dès que le marché rouvre le lundi, le bot reprend automatiquement.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Comment fonctionne la commission de 20% ?<span class="arrow">+</span></div>
+        <div class="faq-a">C'est simple : à chaque fois que le bot te génère des gains, on prélève 20% de ces gains. Si le bot fait +100€ de profit, tu gardes 80€ et on prend 20€. Si le bot ne fait pas de gains, tu ne paies absolument rien. Pas de gains = pas de commission.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">C'est quoi le copy trading ?<span class="arrow">+</span></div>
+        <div class="faq-a">Le copy trading permet de copier automatiquement les trades d'un compte vers un autre. Concrètement, tu lies ton compte broker au nôtre. Quand notre bot ouvre un trade, le même trade s'ouvre automatiquement sur ton compte, proportionnellement à ton capital. Tu n'as rien à faire — tout est automatique.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Mon argent est-il en sécurité ?<span class="arrow">+</span></div>
+        <div class="faq-a">Ton argent reste sur TON compte broker. On n'a jamais accès à tes fonds. Le copy trading copie uniquement les positions — on ne peut ni retirer ni déplacer ton argent. Tu gardes le contrôle total de ton compte à tout moment.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Quand est-ce que ça lance ?<span class="arrow">+</span></div>
+        <div class="faq-a">Le lancement est prévu le 1er juin 2026. Inscris-toi à la liste d'attente pour être prévenu en premier et réserver ta place. Les premières places seront limitées.</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q" onclick="toggleFaq(this)">Comment rejoindre ?<span class="arrow">+</span></div>
+        <div class="faq-a">Inscris-toi à la liste d'attente avec ton email. On t'enverra un lien d'accès dès que ta place est prête. En attendant, rejoins la communauté sur Telegram et Discord pour suivre les résultats en live.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="f-logo">AUREX</div>
+    <div class="f-tag">L'OR NE DORT JAMAIS</div>
+    <div class="f-warn">⚠️ Aucun membre de l'équipe AUREX ne te contactera en DM pour de l'argent ou tes identifiants.</div>
+    <div class="f-disclaimer">
+      Les performances passées ne garantissent pas les résultats futurs. Le trading de produits financiers, y compris le XAU/USD, comporte des risques significatifs de perte en capital. N'investissez jamais plus que ce que vous êtes prêt à perdre. AUREX ne fournit pas de conseils en investissement. Vous êtes seul responsable de vos décisions financières. Le contenu de ce site est fourni à titre informatif uniquement.
+    </div>
+    <div class="f-copy">© 2026 AUREX — Tous droits réservés</div>
+  </div>
+</footer>
+
+<script>
+// FAQ toggle
+function toggleFaq(el){el.parentElement.classList.toggle('open')}
+
+// =============================================
+// WAITLIST — GOOGLE FORMS + REDIRECT TELEGRAM
+// =============================================
+// 
+// COMMENT CONFIGURER :
+// 
+// 1. Va sur https://forms.google.com
+// 2. Crée un nouveau formulaire
+// 3. Ajoute UNE question "Email" (réponse courte)
+// 4. Clique sur les 3 points → "Obtenir le lien pré-rempli"
+// 5. Tape "test@test.com" dans le champ email, clique "Obtenir le lien"
+// 6. Le lien ressemble à : 
+//    https://docs.google.com/forms/d/e/XXXXXX/viewform?usp=pp_url&entry.123456789=test@test.com
+//
+// 7. Copie les 2 valeurs :
+//    - FORM_ID = la partie entre /e/ et /viewform  (ex: "1FAIpQLSe...")
+//    - ENTRY_ID = le numéro après "entry." (ex: "123456789")
+//
+// 8. Remplace les valeurs ci-dessous :
+
+const GOOGLE_FORM_ID = 'TON_FORM_ID_ICI';        // ← Remplace par ton Form ID
+const GOOGLE_ENTRY_ID = 'TON_ENTRY_ID_ICI';       // ← Remplace par ton Entry ID  
+const TELEGRAM_LINK = 'https://t.me/+ZZCw7d7h9TM3ZWM0';
+
+function joinWaitlist(){
+  const emailInput = document.getElementById('wl-email');
+  const email = emailInput.value.trim();
+  const error = document.getElementById('wl-error');
+  const btn = document.getElementById('wl-btn');
+  
+  // Validation
+  if(!email || !email.includes('@') || !email.includes('.')){
+    error.style.display = 'block';
+    emailInput.style.borderColor = '#EF4444';
+    return;
+  }
+  error.style.display = 'none';
+  emailInput.style.borderColor = 'rgba(34,197,94,0.5)';
+  
+  // Bouton loading
+  btn.textContent = 'INSCRIPTION...';
+  btn.style.opacity = '0.7';
+  btn.style.pointerEvents = 'none';
+  
+  // Envoyer à Google Forms via iframe caché
+  if(GOOGLE_FORM_ID !== 'TON_FORM_ID_ICI'){
+    const formUrl = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse?entry.${GOOGLE_ENTRY_ID}=${encodeURIComponent(email)}&submit=Submit`;
+    document.getElementById('gform-frame').src = formUrl;
+  }
+  
+  // Sauvegarder aussi en localStorage (backup)
+  const inscrits = JSON.parse(localStorage.getItem('aurex_waitlist') || '[]');
+  inscrits.push({ email, date: new Date().toISOString() });
+  localStorage.setItem('aurex_waitlist', JSON.stringify(inscrits));
+  
+  // Incrémenter le compteur
+  const countEl = document.getElementById('count');
+  const currentCount = parseInt(countEl.textContent);
+  localStorage.setItem('aurex_count', currentCount + 1);
+  
+  // Afficher succès après petit délai (simule l'envoi)
+  setTimeout(()=>{
+    document.getElementById('wl-box').style.display = 'none';
+    document.getElementById('wl-success').style.display = 'block';
+    
+    // Countdown avant redirection Telegram
+    let seconds = 5;
+    const cdEl = document.getElementById('countdown');
+    const cdInterval = setInterval(()=>{
+      seconds--;
+      cdEl.textContent = seconds;
+      if(seconds <= 0){
+        clearInterval(cdInterval);
+        window.open(TELEGRAM_LINK, '_blank');
+      }
+    }, 1000);
+  }, 800);
+}
+
+// Charger le compteur sauvegardé
+window.addEventListener('DOMContentLoaded', ()=>{
+  const saved = localStorage.getItem('aurex_count');
+  if(saved) document.getElementById('count').textContent = saved;
+});
+
+// Permettre de valider avec la touche Entrée
+document.addEventListener('DOMContentLoaded', ()=>{
+  const emailInput = document.getElementById('wl-email');
+  if(emailInput){
+    emailInput.addEventListener('keypress', (e)=>{
+      if(e.key === 'Enter') joinWaitlist();
+    });
+  }
+});
+
+// Scroll animations
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})
+},{threshold:0.15});
+document.querySelectorAll('.fade-up').forEach(el=>observer.observe(el));
+
+// Launch countdown
+function updateCountdown(){
+  const launch = new Date('2026-06-01T00:00:00+02:00').getTime();
+  const now = new Date().getTime();
+  const diff = launch - now;
+  if(diff <= 0){document.getElementById('cd-days').textContent='0';document.getElementById('cd-hours').textContent='00';document.getElementById('cd-mins').textContent='00';return;}
+  const days = Math.floor(diff/(1000*60*60*24));
+  const hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
+  document.getElementById('cd-days').textContent=days;
+  document.getElementById('cd-hours').textContent=String(hours).padStart(2,'0');
+  document.getElementById('cd-mins').textContent=String(mins).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+
+// No chart needed
+</script>
+
+</body>
+</html>
